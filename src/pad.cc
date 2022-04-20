@@ -27,7 +27,10 @@ void PadData::Init()
 
 	// Host sets z-idle packet count to 5 (default is 30)
 	RAP::Write(0x0A, Z_IDLE_COUNT, m_CsPin);
+
+#ifdef USB_SERIAL
 	Serial.println("Pinnacle Initialized...");
+#endif
 }
 
 void PadData::clearFlags()
@@ -39,19 +42,26 @@ void PadData::SetAdcAttenuation(u8 gain)
 {
 	u8 temp = 0x00;
 
+	// TODO: Cleanup #ifdefs
+
+#ifdef USB_SERIAL
 	Serial.println();
 	Serial.println("Setting ADC Gain...");
+#endif
 
 	read_ERA(0x0187, &temp, 1);
 
+#ifdef USB_SERIAL
 	Serial.print("Current value:\t");
 	Serial.println(temp, HEX);
+#endif
 
 	temp &= 0x3F;
 	temp |= gain;
 	write_ERA(0x0187, temp);
 	read_ERA(0x0187, &temp, 1);
 
+#ifdef USB_SERIAL
 	Serial.print("New value:\t");
 	Serial.print(temp, HEX);
 
@@ -71,35 +81,48 @@ void PadData::SetAdcAttenuation(u8 gain)
 		default:
 			break;
 	}
+#endif
 }
 
 void PadData::TuneEdgeSensitivity()
 {
 	u8 temp = 0x00;
 
+	// TODO: Cleanup #ifdefs
+
+#ifdef USB_SERIAL
 	Serial.println();
 	Serial.println("Setting xAxis.WideZMin...");
+#endif
 
 	read_ERA(0x0149, &temp, 1);
+#ifdef USB_SERIAL
 	Serial.print("Current value:\t");
 	Serial.println(temp, HEX);
+#endif
 
 	write_ERA(0x0149, 0x04);
 	read_ERA(0x0149, &temp, 1);
+#ifdef USB_SERIAL
 	Serial.print("New value:\t");
 	Serial.println(temp, HEX);
 
 	Serial.println();
 	Serial.println("Setting yAxis.WideZMin...");
+#endif
 
 	read_ERA(0x0168, &temp, 1);
+#ifdef USB_SERIAL
 	Serial.print("Current value:\t");
 	Serial.println(temp, HEX);
+#endif
 
 	write_ERA(0x0168, 0x03);
 	read_ERA(0x0168, &temp, 1);
+#ifdef USB_SERIAL
 	Serial.print("New value:\t");
 	Serial.println(temp, HEX);
+#endif
 }
 
 void PadData::ForceCalibration()

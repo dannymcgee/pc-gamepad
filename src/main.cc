@@ -1,6 +1,7 @@
 #include "common.h"
 #include "abs.h"
 #include "pad.h"
+#include "io.h"
 
 
 // ___ Using a Cirque TM0XX0XX and TM0XX0XX with a DK-000013-0x and Arduino ___
@@ -43,10 +44,7 @@ PadData g_Pad1 { CS1_PIN, DR1_PIN, LED_1 };
 
 void setup()
 {
-	Serial.begin(9600);
-	while (!Serial);
-
-	auto str = String("");
+	io::Init();
 
 	pinMode(LED_0, OUTPUT);
 	pinMode(LED_1, OUTPUT);
@@ -67,16 +65,7 @@ void setup()
 		g_Pad1.ForceCalibration();
 	}
 
-	Serial.println();
-	str =
-		SENSE1_SELECT && SENSE0_SELECT
-			? "\tX\tY\tZ\t\t\tX\tY\tZ\tBTN" :
-		SENSE1_SELECT
-			? "SENSE 1\tX\tY\tZ" :
-		SENSE0_SELECT
-			? "SENSE 0\tX\tY\tZ\tBTN"
-			: "BOTH SENSORS DISABLED .. ENABLE SENSOR SELECT";
-	Serial.println(str);
+	io::WriteStartup();
 
 	g_Pad0.EnableFeed(true);
 	g_Pad1.EnableFeed(true);
@@ -84,8 +73,6 @@ void setup()
 
 void loop()
 {
-	auto print_data = String("");
-
 	// Note: the two Pinnacles are not synchronized. In a polling loop like this
 	// you may get one or both of the sensors reporting new data. We just grab
 	// what data there is and write it.
@@ -93,35 +80,15 @@ void loop()
 		g_Pad0.GetAbsolute(g_TouchData0);
 		g_TouchData0.CheckValidTouch();
 		g_TouchData0.ScaleData(1024, 1024);
-
-		print_data += "SENSE_0 ";
-		g_TouchData0.DataToString(print_data, SENSE0_OVERLAY_CURVE);
-
-		if (SENSE1_SELECT && !g_Pad1.DrAsserted())
-			print_data += "\t\t\t\t\t\t" + String(g_TouchData0.ButtonFlags);
 	}
 
 	if (g_Pad1.DrAsserted() && SENSE1_SELECT) {
 		g_Pad1.GetAbsolute(g_TouchData1);
 		g_TouchData1.CheckValidTouch();
 		g_TouchData1.ScaleData(1024, 1024);
-
-		print_data +=
-			SENSE0_SELECT && print_data.length() == 0
-				? "\t\t\t\t\tSENS_1 " :
-			SENSE1_SELECT
-				? "\t\tSENS_1 "
-				: "SENS_1 ";
-
-		g_TouchData1.DataToString(print_data, SENSE1_OVERLAY_CURVE);
-
-		print_data += "\t" + String(g_TouchData0.ButtonFlags);
 	}
 
-	if (print_data.length() > 0) {
-		print_data += "\n";
-		Serial.print(print_data);
-	}
+	io::WriteData(g_Pad0, g_TouchData0, g_Pad1, g_TouchData1);
 
 	digitalWrite(g_Pad0.LedPin, !g_TouchData0.TouchDown);
 	digitalWrite(g_Pad1.LedPin, !g_TouchData1.TouchDown);
