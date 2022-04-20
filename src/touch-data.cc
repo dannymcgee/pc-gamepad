@@ -1,7 +1,7 @@
-#include "abs.h"
+#include "touch-data.h"
 
 
-const u8 AbsData::sk_ZValueMap[ROWS_Y][COLS_X] {
+const u8 TouchData::sk_ZValueMap[ROWS_Y][COLS_X] {
 	{ 0,  0,  0,  0,  0,  0,  0,  0 },
 	{ 0,  2,  3,  5,  5,  3,  2,  0 },
 	{ 0,  3,  5, 15, 15,  5,  2,  0 },
@@ -17,7 +17,7 @@ u16 Clamp(u16 value, u16 upper, u16 lower)
 	return value;
 }
 
-AbsData::AbsData()
+TouchData::TouchData()
 	: X(0)
 	, Y(0)
 	, Z(0)
@@ -26,7 +26,7 @@ AbsData::AbsData()
 	, Hovering(false)
 {}
 
-void AbsData::CheckValidTouch()
+void TouchData::CheckValidTouch()
 {
 	u32 zone_x = X / ZONESCALE;
 	u32 zone_y = Y / ZONESCALE;
@@ -34,7 +34,7 @@ void AbsData::CheckValidTouch()
 	Hovering = !(Z > sk_ZValueMap[zone_y][zone_x]);
 }
 
-void AbsData::ScaleData(u16 x_res, u16 y_res)
+void TouchData::ScaleData(u16 x_res, u16 y_res)
 {
 	u32 x_temp = 0;
 	u32 y_temp = 0;
@@ -53,7 +53,7 @@ void AbsData::ScaleData(u16 x_res, u16 y_res)
 	Y = (u16) (y_temp * y_res / PINNACLE_Y_RANGE);
 }
 
-void AbsData::DataToString(String& out_str, bool curve)
+void TouchData::DataToString(String& out_str, bool curve)
 const {
 	out_str.concat(String(X));
 	out_str.concat("\t");
@@ -71,13 +71,13 @@ const {
 	}
 }
 
-void AbsData::clipCoordinates()
+void TouchData::clipCoordinates()
 {
 	X = Clamp(X, PINNACLE_X_UPPER, PINNACLE_X_LOWER);
 	Y = Clamp(Y, PINNACLE_Y_UPPER, PINNACLE_Y_LOWER);
 }
 
-bool AbsData::zIdlePacket()
+bool TouchData::zIdlePacket()
 const {
 	return X == 0 && Y == 0 && Z == 0;
 }

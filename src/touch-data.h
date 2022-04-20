@@ -3,7 +3,7 @@
 #include "common.h"
 
 
-struct AbsData {
+struct TouchData {
 public:
 	u16 X;
 	u16 Y;
@@ -16,7 +16,7 @@ private:
 	static const u8 sk_ZValueMap[ROWS_Y][COLS_X];
 
 public:
-	AbsData();
+	TouchData();
 
 	/**
 	 * Checks for "hover" caused by curved overlays.

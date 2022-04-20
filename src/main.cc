@@ -1,6 +1,6 @@
 #include "common.h"
-#include "abs.h"
-#include "pad.h"
+#include "touch-data.h"
+#include "touchpad.h"
 #include "io.h"
 
 
@@ -35,40 +35,40 @@
 // REXT = 976kOhm
 
 
-AbsData g_TouchData0 {};
-AbsData g_TouchData1 {};
+TouchData g_TouchData0 {};
+TouchData g_TouchData1 {};
 
-PadData g_Pad0 { CS0_PIN, DR0_PIN, LED_0 };
-PadData g_Pad1 { CS1_PIN, DR1_PIN, LED_1 };
+Touchpad g_Touchpad0 { CS0_PIN, DR0_PIN, LED_0 };
+Touchpad g_Touchpad1 { CS1_PIN, DR1_PIN, LED_1 };
 
 
 void setup()
 {
-	io::Init();
+	IO::Init();
 
 	pinMode(LED_0, OUTPUT);
 	pinMode(LED_1, OUTPUT);
 
-	if (SENSE0_SELECT) g_Pad0.Init();
-	if (SENSE1_SELECT) g_Pad1.Init();
+	if (SENSE0_SELECT) g_Touchpad0.Init();
+	if (SENSE1_SELECT) g_Touchpad1.Init();
 
 	// These functions are required for use with thick overlays (curved)
 	if (SENSE0_OVERLAY_CURVE) {
-		g_Pad0.SetAdcAttenuation(ADC_ATTENUATE_2X);
-		g_Pad0.TuneEdgeSensitivity();
-		g_Pad0.ForceCalibration();
+		g_Touchpad0.SetAdcAttenuation(ADC_ATTENUATE_2X);
+		g_Touchpad0.TuneEdgeSensitivity();
+		g_Touchpad0.ForceCalibration();
 	}
 
 	if (SENSE1_OVERLAY_CURVE) {
-		g_Pad1.SetAdcAttenuation(ADC_ATTENUATE_2X);
-		g_Pad1.TuneEdgeSensitivity();
-		g_Pad1.ForceCalibration();
+		g_Touchpad1.SetAdcAttenuation(ADC_ATTENUATE_2X);
+		g_Touchpad1.TuneEdgeSensitivity();
+		g_Touchpad1.ForceCalibration();
 	}
 
-	io::WriteStartup();
+	IO::WriteStartup();
 
-	g_Pad0.EnableFeed(true);
-	g_Pad1.EnableFeed(true);
+	g_Touchpad0.EnableFeed(true);
+	g_Touchpad1.EnableFeed(true);
 }
 
 void loop()
@@ -76,20 +76,20 @@ void loop()
 	// Note: the two Pinnacles are not synchronized. In a polling loop like this
 	// you may get one or both of the sensors reporting new data. We just grab
 	// what data there is and write it.
-	if (g_Pad0.DrAsserted() && SENSE0_SELECT) {
-		g_Pad0.GetAbsolute(g_TouchData0);
+	if (g_Touchpad0.DrAsserted() && SENSE0_SELECT) {
+		g_Touchpad0.GetAbsolute(g_TouchData0);
 		g_TouchData0.CheckValidTouch();
 		g_TouchData0.ScaleData(1024, 1024);
 	}
 
-	if (g_Pad1.DrAsserted() && SENSE1_SELECT) {
-		g_Pad1.GetAbsolute(g_TouchData1);
+	if (g_Touchpad1.DrAsserted() && SENSE1_SELECT) {
+		g_Touchpad1.GetAbsolute(g_TouchData1);
 		g_TouchData1.CheckValidTouch();
 		g_TouchData1.ScaleData(1024, 1024);
 	}
 
-	io::WriteData(g_Pad0, g_TouchData0, g_Pad1, g_TouchData1);
+	IO::WriteData(g_Touchpad0, g_TouchData0, g_Touchpad1, g_TouchData1);
 
-	digitalWrite(g_Pad0.LedPin, !g_TouchData0.TouchDown);
-	digitalWrite(g_Pad1.LedPin, !g_TouchData1.TouchDown);
+	digitalWrite(g_Touchpad0.LedPin, !g_TouchData0.TouchDown);
+	digitalWrite(g_Touchpad1.LedPin, !g_TouchData1.TouchDown);
 }

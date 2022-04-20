@@ -1,6 +1,8 @@
 #include "io.h"
+#include "touch-data.h"
+#include "touchpad.h"
 
-namespace io {
+namespace IO {
 
 void Init()
 {
@@ -35,8 +37,8 @@ void WriteStartup()
 }
 
 void WriteData(
-	const PadData& pad0, const AbsData& data0,
-	const PadData& pad1, const AbsData& data1)
+	const Touchpad& pad0, const TouchData& data0,
+	const Touchpad& pad1, const TouchData& data1)
 {
 #ifdef USB_SERIAL
 	auto print_str = String("");

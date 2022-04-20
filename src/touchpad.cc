@@ -1,15 +1,15 @@
-#include "pad.h"
-#include "abs.h"
+#include "touchpad.h"
+#include "touch-data.h"
 #include "rap.h"
 
 
-PadData::PadData(u8 cs_pin, u8 dr_pin, u8 led_pin)
+Touchpad::Touchpad(u8 cs_pin, u8 dr_pin, u8 led_pin)
 	: LedPin(led_pin)
 	, m_CsPin(cs_pin)
 	, m_DrPin(dr_pin)
 {}
 
-void PadData::Init()
+void Touchpad::Init()
 {
 	RAP::Init(m_CsPin);
 	digitalWrite(m_CsPin, HIGH);
@@ -33,12 +33,12 @@ void PadData::Init()
 #endif
 }
 
-void PadData::clearFlags()
+void Touchpad::clearFlags()
 {
 	RAP::Write(0x02, 0x00, m_CsPin);
 }
 
-void PadData::SetAdcAttenuation(u8 gain)
+void Touchpad::SetAdcAttenuation(u8 gain)
 {
 	u8 temp = 0x00;
 
@@ -84,11 +84,12 @@ void PadData::SetAdcAttenuation(u8 gain)
 #endif
 }
 
-void PadData::TuneEdgeSensitivity()
+void Touchpad::TuneEdgeSensitivity()
 {
 	u8 temp = 0x00;
 
 	// TODO: Cleanup #ifdefs
+	// TODO: Edge sensitivity feels a little off, especially on the 35mm
 
 #ifdef USB_SERIAL
 	Serial.println();
@@ -125,7 +126,7 @@ void PadData::TuneEdgeSensitivity()
 #endif
 }
 
-void PadData::ForceCalibration()
+void Touchpad::ForceCalibration()
 {
 	u8 cal_config_value = 0x00;
 
@@ -142,7 +143,7 @@ void PadData::ForceCalibration()
 	clearFlags();
 }
 
-void PadData::EnableFeed(bool enable)
+void Touchpad::EnableFeed(bool enable)
 {
 	u8 temp;
 
@@ -158,7 +159,7 @@ void PadData::EnableFeed(bool enable)
 	}
 }
 
-void PadData::GetAbsolute(AbsData& out_result)
+void Touchpad::GetAbsolute(TouchData& out_result)
 {
 	u8 data[6] = { 0, 0, 0, 0, 0, 0 };
 	RAP::Read(0x12, data, 6, m_CsPin);
@@ -173,12 +174,12 @@ void PadData::GetAbsolute(AbsData& out_result)
 	out_result.TouchDown = out_result.X != 0;
 }
 
-bool PadData::DrAsserted()
+bool Touchpad::DrAsserted()
 const {
 	return digitalRead(m_DrPin);
 }
 
-void PadData::read_ERA(u16 addr, u8* data, u16 count)
+void Touchpad::read_ERA(u16 addr, u8* data, u16 count)
 {
 	u8 era_control_value = 0xFF;
 	EnableFeed(false);
@@ -200,7 +201,7 @@ void PadData::read_ERA(u16 addr, u8* data, u16 count)
 	}
 }
 
-void PadData::write_ERA(u16 addr, u8 data)
+void Touchpad::write_ERA(u16 addr, u8 data)
 {
 	u8 era_control_value = 0xFF;
 	EnableFeed(false);

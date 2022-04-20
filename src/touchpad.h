@@ -2,10 +2,15 @@
 
 #include "common.h"
 
-struct AbsData;
+struct TouchData;
 
-
-struct PadData {
+/**
+ * NOTE: This type stretches the definition of "const-correctness" by defining
+ * any method that writes to its CS pin as non-const. Since doing so modifies
+ * the behavior of the touchpad which the object instance represents, this feels
+ * correct _in spirit_, if not by the letter.
+ */
+struct Touchpad {
 public:
 	u8 LedPin;
 
@@ -14,7 +19,7 @@ private:
 	u8 m_DrPin;
 
 public:
-	PadData(u8 cs_pin, u8 dr_pin, u8 led_pin);
+	Touchpad(u8 cs_pin, u8 dr_pin, u8 led_pin);
 
 	void Init();
 
@@ -46,7 +51,7 @@ public:
 	 * Reads XYZ data from Pinnacle registers 0x14 through 0x17 and writes the
 	 * result to `out_result`.
 	 */
-	void GetAbsolute(AbsData& out_result);
+	void GetAbsolute(TouchData& out_result);
 
 private:
 	void clearFlags();
